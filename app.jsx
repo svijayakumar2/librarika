@@ -471,7 +471,7 @@ export default function App() {
             )}
 
             {/* Result cards grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280, 1fr))", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
               {results.map((r, i) => {
                 const avg = avgConfidence(r);
                 return (
