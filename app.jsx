@@ -3,10 +3,10 @@ import { useState, useCallback, useRef } from "react";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 const MODELS = [
-  { id: "openai/chatgpt-4o-latest", label: "GPT-4o" },
-  { id: "google/gemini-2.0-flash-exp:free", label: "Gemini Flash (Free)" },
-  { id: "meta-llama/llama-3.3-8b-instruct:free", label: "Llama 3.3 (Free)" },
-  { id: "qwen/qwen2.5-vl-32b-instruct:free", label: "Qwen 2.5 VL (Free)" },
+  // { id: "openai/chatgpt-4o-latest", label: "GPT-4o" },
+  // { id: "google/gemini-2.0-flash-exp:free", label: "Gemini Flash (Free)" },
+  // { id: "meta-llama/llama-3.3-8b-instruct:free", label: "Llama 3.3 (Free)" },
+  { id: "qwen/qwen2.5-vl-72b-instruct", label: "Qwen 2.5 VL " },
 ];
 
 const PROMPT = `You are analyzing a handwritten museum tour note. Extract ALL information from this form and return ONLY valid JSON with no markdown formatting, no backticks, no preamble.
