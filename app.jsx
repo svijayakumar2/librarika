@@ -129,6 +129,7 @@ async function processImage(file, apiKey, model) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
+    console.error("OpenRouter error:", JSON.stringify(err, null, 2));
     const detail = err?.error?.metadata?.raw || JSON.stringify(err?.error) || res.statusText;
     throw new Error(`API ${res.status}: ${detail}`);
   }
