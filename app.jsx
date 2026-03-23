@@ -217,8 +217,13 @@ export default function App() {
             return new Promise((res) => entry.file((f) => { allFiles.push(f); res(); }));
           } else if (entry.isDirectory) {
             const reader = entry.createReader();
-            const entries = await new Promise((res) => reader.readEntries(res));
-            for (const e of entries) await traverse(e);
+            const readAll = async () => {
+              const batch = await new Promise((res) => reader.readEntries(res));
+              if (batch.length === 0) return;
+              for (const e of batch) await traverse(e);
+              await readAll();
+            };
+            await readAll();
           }
         };
         const entries = Array.from(e.dataTransfer.items)
