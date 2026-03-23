@@ -156,14 +156,26 @@ async function processImage(file, apiKey, model) {
 
 function resultsToCSV(results) {
   const fields = ["Date", "Time", "Group", "Public/Private", "Age/Grade Level", "# Attended", "Tour Topic", "Docent(s)", "Comments", "One Thing Learned"];
-  const header = fields.join(",");
+  const header = ["File", ...fields].join(",");
   const rows = results.map((r) => {
-    return fields
-      .map((f) => {
-        const val = r.fields?.[f]?.value || "";
-        return `"${val.replace(/"/g, '""')}"`;
-      })
-      .join(",");
+    const file = `"${(r._source_file || "").replace(/"/g, '""')}"`;
+    return [file, ...fields.map((f) => {
+      const val = r.fields?.[f]?.value || "";
+      return `"${val.replace(/"/g, '""')}"`;
+    })].join(",");
+  });
+  return header + "\n" + rows.join("\n");
+}
+
+function confidenceToCSV(results) {
+  const fields = ["Date", "Time", "Group", "Public/Private", "Age/Grade Level", "# Attended", "Tour Topic", "Docent(s)", "Comments", "One Thing Learned"];
+  const header = ["File", ...fields.map((f) => `${f} (confidence)`)].join(",");
+  const rows = results.map((r) => {
+    const file = `"${(r._source_file || "").replace(/"/g, '""')}"`;
+    return [file, ...fields.map((f) => {
+      const c = r.fields?.[f]?.confidence ?? "";
+      return `"${c}"`;
+    })].join(",");
   });
   return header + "\n" + rows.join("\n");
 }
@@ -420,22 +432,27 @@ export default function App() {
               <h2 style={{ margin: 0, fontSize: 16, fontWeight: 500, color: "#aaa" }}>
                 Results ({results.length})
               </h2>
-              <button
-                onClick={() => downloadCSV(results)}
-                style={{
-                  background: "#1a1a22",
-                  color: "#8b5cf6",
-                  border: "1px solid #2a2a30",
-                  borderRadius: 6,
-                  padding: "6px 16px",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "'DM Sans', sans-serif",
-                }}
-              >
-                ↓ Download CSV
-              </button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => downloadCSV(results)}
+                  style={{ background: "#1a1a22", color: "#8b5cf6", border: "1px solid #2a2a30", borderRadius: 6, padding: "6px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  ↓ Download CSV
+                </button>
+                <button
+                  onClick={() => {
+                    const csv = confidenceToCSV(results);
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url; a.download = "tour_notes_confidence.csv"; a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  style={{ background: "#1a1a22", color: "#666", border: "1px solid #2a2a30", borderRadius: 6, padding: "6px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  ↓ Confidence
+                </button>
+              </div>
             </div>
 
             {/* Single result detail view */}
