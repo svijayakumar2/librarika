@@ -129,7 +129,8 @@ async function processImage(file, apiKey, model) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(`API ${res.status}: ${err?.error?.message || res.statusText}`);
+    const detail = err?.error?.metadata?.raw || JSON.stringify(err?.error) || res.statusText;
+    throw new Error(`API ${res.status}: ${detail}`);
   }
 
   const data = await res.json();
