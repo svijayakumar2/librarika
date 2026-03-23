@@ -8,21 +8,21 @@ const MODELS = [
 
 const PROMPT = `You are analyzing a handwritten museum tour note. Extract ALL information from this form and return ONLY valid JSON with no markdown formatting, no backticks, no preamble.
 
-The form has these fields: Date, Time, Group, Public/Private, Age/Grade Level, Number in group, Tour Topic, Docent(s), Comments, One thing you learned.
+The form has these fields: Date, Time, Group, Public/Private, Age/Grade Level, Number in group, Tour Topic, Docent(s), Comments, One thing that you learned through leading this tour.
 
 Return JSON in this EXACT format:
 {
   "fields": {
     "Date": {"value": "", "confidence": 1.0},
-    "Day of Week": {"value": "", "confidence": 1.0},
-    "Tour Type": {"value": "", "confidence": 1.0},
-    "Tour Time": {"value": "", "confidence": 1.0},
-    "# Attended": {"value": "", "confidence": 1.0},
+    "Time": {"value": "", "confidence": 1.0},
+    "Group": {"value": "", "confidence": 1.0},
+    "Public/Private": {"value": "", "confidence": 1.0},
     "Age/Grade Level": {"value": "", "confidence": 1.0},
-    "Region From": {"value": "", "confidence": 1.0},
+    "# Attended": {"value": "", "confidence": 1.0},
     "Tour Topic": {"value": "", "confidence": 1.0},
-    "Docent": {"value": "", "confidence": 1.0},
-    "Comments": {"value": "", "confidence": 1.0}
+    "Docent(s)": {"value": "", "confidence": 1.0},
+    "Comments": {"value": "", "confidence": 1.0},
+    "One Thing Learned": {"value": "", "confidence": 1.0}
   }
 }
 
@@ -33,11 +33,8 @@ confidence is a float 0.0-1.0 representing how confident you are in the transcri
 - Clear and unambiguous text (0.9-1.0)
 - Empty/blank fields should have confidence 1.0 with empty string value
 
-For "Tour Type": use "Public 3 in 30" or "Public Drop In" or whatever is indicated.
-For "Day of Week": determine from date if possible.
-For "Region From": this is the Group field.
-For "# Attended": this is Number in group.
-Combine Comments and "One thing you learned" into Comments.
+For "# Attended": this is the Number in group field.
+For "Public/Private": transcribe exactly what is written or circled.
 
 Return ONLY the JSON object. No other text.`;
 
@@ -158,7 +155,7 @@ async function processImage(file, apiKey, model) {
 }
 
 function resultsToCSV(results) {
-  const fields = ["Date", "Day of Week", "Tour Type", "Tour Time", "# Attended", "Age/Grade Level", "Region From", "Tour Topic", "Docent", "Comments"];
+  const fields = ["Date", "Time", "Group", "Public/Private", "Age/Grade Level", "# Attended", "Tour Topic", "Docent(s)", "Comments", "One Thing Learned"];
   const header = fields.join(",");
   const rows = results.map((r) => {
     return fields
@@ -182,7 +179,7 @@ function downloadCSV(results, filename = "tour_notes.csv") {
   URL.revokeObjectURL(url);
 }
 
-const FIELD_ORDER = ["Date", "Day of Week", "Tour Type", "Tour Time", "# Attended", "Age/Grade Level", "Region From", "Tour Topic", "Docent", "Comments"];
+const FIELD_ORDER = ["Date", "Time", "Group", "Public/Private", "Age/Grade Level", "# Attended", "Tour Topic", "Docent(s)", "Comments", "One Thing Learned"];
 
 export default function App() {
   const [apiKey, setApiKey] = useState("");
