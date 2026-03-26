@@ -258,29 +258,28 @@ export default function App() {
     setSelectedResult(null);
     setProgress({ done: 0, total: files.length });
 
-    const allResults = [];
     for (let i = 0; i < files.length; i++) {
       setCurrentFile(files[i].name);
       setProgress({ done: i, total: files.length });
+      let result;
       try {
-        const result = await processImage(files[i], apiKey, model);
+        result = await processImage(files[i], apiKey, model);
         result._source_file = files[i].name;
         result._preview = URL.createObjectURL(files[i]);
-        allResults.push(result);
       } catch (e) {
-        allResults.push({
+        result = {
           fields: FIELD_ORDER.reduce((acc, f) => { acc[f] = { value: "", confidence: 0 }; return acc; }, {}),
           _source_file: files[i].name,
           _error: e.message,
           _preview: URL.createObjectURL(files[i]),
-        });
+        };
       }
-      setResults([...allResults]);
+      setResults(prev => [...prev, result]);
     }
     setProgress({ done: files.length, total: files.length });
     setProcessing(false);
     setCurrentFile("");
-    if (allResults.length === 1) setSelectedResult(0);
+    if (files.length === 1) setSelectedResult(0);
   };
 
   const avgConfidence = (result) => {
