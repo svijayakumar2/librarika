@@ -485,10 +485,30 @@ export default function App() {
                                 <td style={{ padding: "8px 8px 8px 0", fontSize: 12, color: "#666", fontWeight: 600, width: 130, verticalAlign: "top", fontFamily: "'JetBrains Mono', monospace" }}>
                                   {field}
                                 </td>
-                                <td style={{ padding: "8px 0", fontSize: 14, color: isLow ? confidenceColor(f.confidence) : "#ddd", background: isLow ? `${confidenceColor(f.confidence)}08` : "transparent" }}>
+                                <td style={{ padding: "4px 0", fontSize: 14 }}>
                                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                    <span>{f.value || "—"}</span>
-                                    {f.value && <ConfidenceBadge confidence={f.confidence} />}
+                                    <input
+                                      value={f.value}
+                                      onChange={(e) => {
+                                        const updated = results.map((r, i) => {
+                                          if (i !== selectedResult) return r;
+                                          return { ...r, fields: { ...r.fields, [field]: { ...r.fields[field], value: e.target.value, confidence: 1.0 } } };
+                                        });
+                                        setResults(updated);
+                                      }}
+                                      style={{
+                                        background: "transparent",
+                                        border: "none",
+                                        borderBottom: `1px solid ${isLow ? confidenceColor(f.confidence) : "#2a2a30"}`,
+                                        color: isLow ? confidenceColor(f.confidence) : "#ddd",
+                                        fontSize: 14,
+                                        padding: "2px 0",
+                                        width: "100%",
+                                        outline: "none",
+                                        fontFamily: "'DM Sans', sans-serif",
+                                      }}
+                                    />
+                                    <ConfidenceBadge confidence={f.confidence} />
                                   </div>
                                 </td>
                               </tr>
