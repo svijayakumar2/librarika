@@ -490,11 +490,11 @@ export default function App() {
                                     <input
                                       value={f.value}
                                       onChange={(e) => {
-                                        const updated = results.map((r, i) => {
+                                        const val = e.target.value;
+                                        setResults(prev => prev.map((r, i) => {
                                           if (i !== selectedResult) return r;
-                                          return { ...r, fields: { ...r.fields, [field]: { ...r.fields[field], value: e.target.value, confidence: 1.0 } } };
-                                        });
-                                        setResults(updated);
+                                          return { ...r, fields: { ...r.fields, [field]: { ...r.fields[field], value: val, confidence: 1.0 } } };
+                                        }));
                                       }}
                                       style={{
                                         background: "transparent",
