@@ -154,34 +154,33 @@ async function processImage(file, apiKey, model) {
   return JSON.parse(text.trim());
 }
 
-function resultsToCSV(results) {
-  const fields = ["Date", "Time", "Group", "Public/Private", "Age/Grade Level", "# Attended", "Tour Topic", "Docent(s)", "Comments", "One Thing Learned"];
-  const header = ["File", ...fields].join(",");
-  const rows = results.map((r) => {
+const CSV_FIELDS = ["Date", "Time", "Group", "Public/Private", "Age/Grade Level", "# Attended", "Tour Topic", "Docent(s)", "Comments", "One Thing Learned"];
+
+function getVal(results, edits, i, field) {
+  const key = `${i}:${field}`;
+  return key in edits ? edits[key] : (results[i].fields?.[field]?.value || "");
+}
+
+function resultsToCSV(results, edits) {
+  const header = ["File", ...CSV_FIELDS].join(",");
+  const rows = results.map((r, i) => {
     const file = `"${(r._source_file || "").replace(/"/g, '""')}"`;
-    return [file, ...fields.map((f) => {
-      const val = r.fields?.[f]?.value || "";
-      return `"${val.replace(/"/g, '""')}"`;
-    })].join(",");
+    return [file, ...CSV_FIELDS.map((f) => `"${getVal(results, edits, i, f).replace(/"/g, '""')}"`)] .join(",");
   });
   return header + "\n" + rows.join("\n");
 }
 
 function confidenceToCSV(results) {
-  const fields = ["Date", "Time", "Group", "Public/Private", "Age/Grade Level", "# Attended", "Tour Topic", "Docent(s)", "Comments", "One Thing Learned"];
-  const header = ["File", ...fields.map((f) => `${f} (confidence)`)].join(",");
+  const header = ["File", ...CSV_FIELDS.map((f) => `${f} (confidence)`)].join(",");
   const rows = results.map((r) => {
     const file = `"${(r._source_file || "").replace(/"/g, '""')}"`;
-    return [file, ...fields.map((f) => {
-      const c = r.fields?.[f]?.confidence ?? "";
-      return `"${c}"`;
-    })].join(",");
+    return [file, ...CSV_FIELDS.map((f) => `"${r.fields?.[f]?.confidence ?? ""}"`)].join(",");
   });
   return header + "\n" + rows.join("\n");
 }
 
-function downloadCSV(results, filename = "tour_notes.csv") {
-  const csv = resultsToCSV(results);
+function downloadCSV(results, edits = {}, filename = "tour_notes.csv") {
+  const csv = resultsToCSV(results, edits);
   const blob = new Blob([csv], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -203,6 +202,7 @@ export default function App() {
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [edits, setEdits] = useState({}); // key: "resultIndex:field" -> edited value
   const [selectedResult, setSelectedResult] = useState(null);
   const inputRef = useRef();
 
@@ -256,6 +256,7 @@ export default function App() {
     setProcessing(true);
     setResults([]);
     setSelectedResult(null);
+    setEdits({});
     setProgress({ done: 0, total: files.length });
 
     for (let i = 0; i < files.length; i++) {
@@ -433,7 +434,7 @@ export default function App() {
               </h2>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
-                  onClick={() => downloadCSV(results)}
+                  onClick={() => downloadCSV(results, edits)}
                   style={{ background: "#1a1a22", color: "#8b5cf6", border: "1px solid #2a2a30", borderRadius: 6, padding: "6px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
                 >
                   ↓ Download CSV
@@ -487,14 +488,8 @@ export default function App() {
                                 <td style={{ padding: "4px 0", fontSize: 14 }}>
                                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                     <input
-                                      value={f.value}
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        setResults(prev => prev.map((r, i) => {
-                                          if (i !== selectedResult) return r;
-                                          return { ...r, fields: { ...r.fields, [field]: { ...r.fields[field], value: val, confidence: 1.0 } } };
-                                        }));
-                                      }}
+                                      value={`${selectedResult}:${field}` in edits ? edits[`${selectedResult}:${field}`] : f.value}
+                                      onChange={(e) => setEdits(prev => ({ ...prev, [`${selectedResult}:${field}`]: e.target.value }))}
                                       style={{
                                         background: "transparent",
                                         border: "none",
