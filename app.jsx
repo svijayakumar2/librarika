@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import heic2any from "heic2any";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -85,6 +86,10 @@ function ConfidenceBadge({ confidence }) {
 }
 
 async function fileToBase64(file) {
+  const ext = file.name.split(".").pop().toLowerCase();
+  if (ext === "heic" || ext === "heif") {
+    file = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 });
+  }
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
